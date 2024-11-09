@@ -14,10 +14,16 @@ transform
     .MoveTo(new Vector3(5, 0, 0), 2f)
     .Play();
 ```
-- RotateTo
+- RotateTo - to rotate to some vector
 ```C#
 transform
     .RotateTo(new Vector3(0, 180, 0), 1f)
+    .Play();
+```
+- RotateByX / RotateByY / RotateByZ - to rotate around local axis
+```C#
+ transform
+    .RotateByY(360f, 1f)
     .Play();
 ```
 - JumpTo

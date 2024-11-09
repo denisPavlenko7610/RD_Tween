@@ -1,0 +1,20 @@
+{
+  "name": "com.rd.rdtween",
+  "version": "0.1.0",
+  "displayName": "RD_Tween",
+  "description": "simple tween for Unity",
+  "unity": "2022.1",
+  "unityRelease": "",
+  "documentationUrl": "",
+  "changelogUrl": "",
+  "licensesUrl": "",
+  "keywords": [
+    "rd",
+    "tween"
+  ],
+  "author": {
+    "name": "RDragon",
+    "email": "denispavlenko7610new@gmail.com",
+    "url": "https://www.youtube.com/channel/UCP_0FkzSCl-7V0Jv6ZaDszQ"
+  }
+}

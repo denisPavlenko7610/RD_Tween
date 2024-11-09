@@ -10,12 +10,13 @@
 
 - MoveTo
 ```C#
-transform.MoveTo(new Vector3(5, 0, 0), 2f)
-         .Play();
+transform
+    .MoveTo(new Vector3(5, 0, 0), 2f)
+    .Play();
 ```
 - RotateTo
 ```C#
-transform.
+transform
     .RotateTo(new Vector3(0, 180, 0), 1f)
     .Play();
 ```

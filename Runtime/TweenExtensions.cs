@@ -15,6 +15,21 @@ namespace RD_Tween.Runtime
             var tween = new TweenAction(transform).RotateTo(target, duration);
             return tween;
         }
+        
+        public static TweenAction RotateByX(this Transform transform, float angle, float duration)
+        {
+            return new TweenAction(transform).RotateBy(Vector3.right, angle, duration);
+        }
+
+        public static TweenAction RotateByY(this Transform transform, float angle, float duration)
+        {
+            return new TweenAction(transform).RotateBy(Vector3.up, angle, duration);
+        }
+
+        public static TweenAction RotateByZ(this Transform transform, float angle, float duration)
+        {
+            return new TweenAction(transform).RotateBy(Vector3.forward, angle, duration);
+        }
 
         public static TweenAction ScaleTo(this Transform transform, Vector3 target, float duration)
         {

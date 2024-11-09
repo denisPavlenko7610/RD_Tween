@@ -1,6 +1,6 @@
 {
   "name": "com.rd.rdtween",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "displayName": "RD_Tween",
   "description": "simple tween for Unity",
   "unity": "2022.1",

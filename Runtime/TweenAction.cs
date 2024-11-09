@@ -24,7 +24,7 @@ namespace RD_Tween.Runtime
 
         public TweenAction MoveTo(Vector3 target, float duration)
         {
-            var startValue = _transform.position;
+            Vector3 startValue = _transform.position;
             _actions.Add(t => _transform.position = Vector3.Lerp(startValue, target, t));
             _durations.Add(duration);
             _easings.Add(t => t); // Default to linear easing
@@ -33,10 +33,29 @@ namespace RD_Tween.Runtime
 
         public TweenAction RotateTo(Vector3 target, float duration)
         {
-            var startValue = _transform.eulerAngles;
-            _actions.Add(t => _transform.eulerAngles = Vector3.Lerp(startValue, target, t));
+            Vector3 startValue = _transform.eulerAngles;
+            _actions.Add(t => _transform.eulerAngles = Vector3.Slerp(startValue, target, t));
             _durations.Add(duration);
-            _easings.Add(t => t);
+            _easings.Add(t => t); // Default to linear easing
+            return this;
+        }
+        
+        public TweenAction RotateBy(Vector3 axis, float angle, float duration)
+        {
+            Quaternion startRotation = _transform.rotation; // Starting rotation
+
+            _actions.Add(t =>
+            {
+                // Calculate the interpolated rotation based on t
+                float currentAngle = Mathf.Lerp(0, angle, t); // t goes from 0 to 1 over the duration
+                Quaternion rotationDelta = Quaternion.AngleAxis(currentAngle, axis);
+
+                // Apply the rotation relative to the start rotation
+                _transform.rotation = startRotation * rotationDelta;
+            });
+
+            _durations.Add(duration);
+            _easings.Add(t => t); // Linear easing for constant speed
             return this;
         }
 

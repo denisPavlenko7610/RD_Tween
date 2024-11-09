@@ -1,0 +1,16 @@
+{
+    "name": "RDTweenEditor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:282743afe0c923949a7dcea9b82fbf89"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

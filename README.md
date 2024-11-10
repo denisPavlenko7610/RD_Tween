@@ -11,7 +11,7 @@
 - MoveTo
 ```C#
 transform
-    .MoveTo(new Vector3(5, 0, 0), 2f)
+    .MoveTo(new Vector3(5, 0, 0), 2f) //move to vector by 2 seconds
     .Play();
 ```
 - RotateTo - to rotate to some vector
@@ -23,7 +23,7 @@ transform
 - RotateByX / RotateByY / RotateByZ - to rotate around local axis
 ```C#
  transform
-    .RotateByY(360f, 1f)
+    .RotateByY(360f, 1f) //move around 360 degree by 1 second
     .Play();
 ```
 - JumpTo

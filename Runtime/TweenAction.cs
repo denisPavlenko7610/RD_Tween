@@ -22,6 +22,11 @@ namespace RD_Tween.Runtime
             _transform = transform;
         }
 
+        public bool IsDead()
+        {
+            return _transform == null;
+        }
+
         public TweenAction MoveTo(Vector3 target, float duration)
         {
             Vector3 startValue = _transform.position;

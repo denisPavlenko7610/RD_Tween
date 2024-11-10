@@ -11,11 +11,14 @@ namespace RD_Tween.Runtime
 
         public void Update(float deltaTime)
         {
-            if (_activeTweens.Count == 0)
-                return;
-            
             for (int i = _activeTweens.Count - 1; i >= 0; i--)
             {
+                if (_activeTweens[i] == null || _activeTweens[i].IsDead())
+                {
+                    _activeTweens.RemoveAt(i);
+                    return;
+                }
+                
                 if (_activeTweens[i].UpdateTween(deltaTime))
                     continue;
             

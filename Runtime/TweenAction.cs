@@ -126,10 +126,10 @@ namespace RD_Tween.Runtime
 
         public void Play()
         {
-            TweenManager.Instance.AddTween(this);
+            Tween.Instance.AddTween(this);
             foreach (var tween in _joinedTweens)
             {
-                TweenManager.Instance.AddTween(tween); // Play joined tweens together
+                Tween.Instance.AddTween(tween); // Play joined tweens together
             }
         }
 

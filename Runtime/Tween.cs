@@ -2,12 +2,12 @@ using System.Collections.Generic;
 
 namespace RD_Tween.Runtime
 {
-    public class TweenManager
+    public class Tween
     {
-        private static TweenManager _instance;
+        private static Tween _instance;
         private List<TweenAction> _activeTweens = new();
 
-        public static TweenManager Instance => _instance ??= new TweenManager();
+        public static Tween Instance => _instance ??= new Tween();
 
         public void Update(float deltaTime)
         {

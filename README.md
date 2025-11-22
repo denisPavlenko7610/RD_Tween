@@ -26,7 +26,8 @@ No external dependencies, no ScriptableObjects, no extra setup.
 
 ## MoveTo
 
-```csharp\ ntransform.MoveTo(new Vector3(5, 0, 0), 2f);
+```
+csharp\ ntransform.MoveTo(new Vector3(5, 0, 0), 2f);
 ```
 
 ## RotateTo

@@ -2,7 +2,7 @@
 
 # Setup
 
-- Add on boostarap sceen gameobject with class TweenUpdater
+- Add on the boostarap sceen gameobject with class TweenUpdater
 
 # Using
 

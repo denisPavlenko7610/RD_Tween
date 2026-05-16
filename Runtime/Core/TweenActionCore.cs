@@ -7,13 +7,6 @@ namespace RD_Tween.Runtime
 {
 	public class TweenActionCore : IControllableTween, IPooledTween
 	{
-		internal enum FromMode
-		{
-			None,
-			Absolute,
-			Relative,
-			Current
-		}
 
 		internal readonly struct FromInstruction
 		{
@@ -27,7 +20,24 @@ namespace RD_Tween.Runtime
 			}
 		}
 
-		protected readonly List<Step> Steps = new();
+		internal enum FromMode
+		{
+			None,
+			Absolute,
+			Relative,
+			Current
+		}
+
+		protected readonly List<Step> Steps = new List<Step>();
+
+		private int _currentIndex;
+		private float _elapsed;
+
+		private bool _autoPlay;
+
+		private bool _isPlaying;
+
+		private Action _onComplete, _onPlay, _onPause, _onKill;
 
 		public UnityEngine.Object Target { get; private set; }
 		public object Id { get; private set; }
@@ -42,22 +52,16 @@ namespace RD_Tween.Runtime
 		public int direction { get; set; } = 1;
 
 		public int Loops { get; private set; } = 1;
-		protected int LoopsDone { get; set; }
 		public LoopType CurrentLoopType { get; private set; } = LoopType.Restart;
-
-		private int _currentIndex;
-		private float _elapsed;
-
-		private bool _autoPlay;
 		public bool AutoKill { get; private set; } = true;
-
-		private bool _isPlaying;
 		public bool paused { get; private set; }
 		public bool killed { get; private set; }
+		protected int LoopsDone { get; set; }
 
-		private Action _onComplete, _onPlay, _onPause, _onKill;
-
-		public virtual void Release() { }
+		public virtual float Duration
+		{
+			get { return Steps.Sum(t => t.Duration); }
+		}
 
 		public void ResetCore(UnityEngine.Object target, bool autoPlay)
 		{
@@ -91,16 +95,6 @@ namespace RD_Tween.Runtime
 			_onComplete = _onPlay = _onPause = _onKill = null;
 		}
 
-		public bool IsDead() => Target == null;
-
-		public virtual float Duration
-		{
-			get
-			{
-				return Steps.Sum(t => t.Duration);
-			}
-		}
-
 		public TweenActionCore AddStep(
 			float duration,
 			Action<float> apply,
@@ -123,38 +117,29 @@ namespace RD_Tween.Runtime
 				}
 			);
 
-			if (_autoPlay)
+			if (_autoPlay) {
 				Autoplay();
-			
+			}
+
 			return this;
 		}
 
-		private void Autoplay()
+		public void Play()
 		{
-			if (killed)
-				return;
-			
-			if (_isPlaying)
-				return;
-
-			_isPlaying = true;
-			paused = false;
-			TweenManager.Instance.AddTween(this);
-			_onPlay?.Invoke();
+			Autoplay();
 		}
-
-		public void Play() => Autoplay();
 
 		public TweenActionCore SetUpdate(UpdateType type, bool isUnscaled = false)
 		{
-			UpdateType oldType = UpdateType;
+			var oldType = UpdateType;
 			bool oldUnscaled = IsUnscaled;
 
 			UpdateType = type;
 			IsUnscaled = isUnscaled;
 
-			if (_isPlaying)
+			if (_isPlaying) {
 				TweenManager.Instance.ChangeUpdateType(this, oldType, oldUnscaled);
+			}
 
 			return this;
 		}
@@ -192,8 +177,9 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore SetEase(Func<float, float> ease)
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return this;
+			}
 
 			Steps[^1].Ease = ease ?? CurvesType.Linear;
 			return this;
@@ -201,8 +187,9 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore SetRelative(bool relative = true)
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return this;
+			}
 
 			Steps[^1].ConfigRelative?.Invoke(relative);
 			return this;
@@ -210,8 +197,9 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore From(Vector3 value)
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return this;
+			}
 
 			Steps[^1].ConfigFrom?.Invoke(new FromInstruction(FromMode.Absolute, value));
 			return this;
@@ -219,8 +207,9 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore From(float value)
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return this;
+			}
 
 			Steps[^1].ConfigFrom?.Invoke(new FromInstruction(FromMode.Absolute, value));
 			return this;
@@ -228,8 +217,9 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore FromRelative(Vector3 offset)
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return this;
+			}
 
 			Steps[^1].ConfigFrom?.Invoke(new FromInstruction(FromMode.Relative, offset));
 			return this;
@@ -237,8 +227,9 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore FromRelative(float offset)
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return this;
+			}
 
 			Steps[^1].ConfigFrom?.Invoke(new FromInstruction(FromMode.Relative, offset));
 			return this;
@@ -246,15 +237,23 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore FromCurrent()
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return this;
+			}
 
 			Steps[^1].ConfigFrom?.Invoke(new FromInstruction(FromMode.Current));
 			return this;
 		}
 
-		public TweenActionCore AppendInterval(float duration) => AddStep(duration, _ => { });
-		public TweenActionCore AppendCallback(Action cb) => AddStep(0.0001f, _ => { }, null, cb);
+		public TweenActionCore AppendInterval(float duration)
+		{
+			return AddStep(duration, _ => { });
+		}
+
+		public TweenActionCore AppendCallback(Action cb)
+		{
+			return AddStep(0.0001f, _ => { }, null, cb);
+		}
 
 		// ---- Events ----
 		public TweenActionCore OnComplete(Action a)
@@ -302,8 +301,9 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore Kill()
 		{
-			if (killed)
+			if (killed) {
 				return this;
+			}
 
 			killed = true;
 			_onKill?.Invoke();
@@ -320,8 +320,9 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore PlayBackwards()
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return this;
+			}
 
 			if (_currentIndex >= Steps.Count) {
 				_currentIndex = Steps.Count - 1;
@@ -339,7 +340,7 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore PlayFromEnd()
 		{
-			Goto(Duration, false);
+			Goto(Duration);
 			_currentIndex = Steps.Count - 1;
 			_elapsed = Steps[_currentIndex].Duration;
 			return PlayBackwards();
@@ -347,18 +348,160 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore Restart(bool play = true)
 		{
-			Rewind(false);
-			if (play)
+			Rewind();
+			if (play) {
 				PlayForward();
-			
+			}
+
 			return this;
+		}
+
+		protected bool Finish(bool completedForward)
+		{
+			if (completedForward) {
+				_onComplete?.Invoke();
+			}
+
+			Release();
+			return false;
+		}
+
+		protected void ResetSteps()
+		{
+			foreach (var step in Steps)
+				step.Started = false;
+		}
+
+		protected void PrepareStepStart(int index)
+		{
+			var step = Steps[index];
+			if (step.Started) {
+				return;
+			}
+
+			step.Started = true;
+			step.OnStart?.Invoke();
+		}
+
+		protected void ApplyStepAt(int index, float t01)
+		{
+			var step = Steps[index];
+			float t = step.Ease(t01);
+			step.Apply?.Invoke(t);
+		}
+
+		private void Autoplay()
+		{
+			if (killed) {
+				return;
+			}
+
+			if (_isPlaying) {
+				return;
+			}
+
+			_isPlaying = true;
+			paused = false;
+			TweenManager.Instance.AddTween(this);
+			_onPlay?.Invoke();
+		}
+
+		private bool UpdateForward(float dt)
+		{
+			if (_currentIndex >= Steps.Count) {
+				return HandleLoopOrFinish(true);
+			}
+
+			PrepareStepStart(_currentIndex);
+
+			_elapsed += dt;
+			float d = Steps[_currentIndex].Duration;
+			float t01 = Mathf.Clamp01(_elapsed / d);
+
+			ApplyStepAt(_currentIndex, t01);
+
+			if (_elapsed < d) {
+				return true;
+			}
+
+			_elapsed = 0f;
+			_currentIndex++;
+			return true;
+		}
+
+		private bool UpdateBackward(float dt)
+		{
+			if (_currentIndex < 0) {
+				return HandleLoopOrFinish(false);
+			}
+
+			PrepareStepStart(_currentIndex);
+
+			_elapsed -= dt;
+			float d = Steps[_currentIndex].Duration;
+			float t01 = Mathf.Clamp01(_elapsed / d);
+
+			ApplyStepAt(_currentIndex, t01);
+
+			if (_elapsed > 0f) {
+				return true;
+			}
+
+			_currentIndex--;
+			if (_currentIndex >= 0) {
+				_elapsed = Steps[_currentIndex].Duration;
+			}
+
+			return true;
+		}
+
+		private bool HandleLoopOrFinish(bool forwardEnded)
+		{
+			if (Loops == 1 || Loops != -1 && LoopsDone >= Loops - 1) {
+				return Finish(forwardEnded);
+			}
+
+			LoopsDone++;
+
+			switch (CurrentLoopType) {
+				case LoopType.Restart:
+				case LoopType.Incremental:
+					ResetSteps();
+					_currentIndex = 0;
+					_elapsed = 0f;
+					direction = 1;
+					return true;
+
+				case LoopType.Yoyo:
+					if (direction == 1) {
+						direction = -1;
+						_currentIndex = Steps.Count - 1;
+						PrepareStepStart(_currentIndex);
+						_elapsed = Steps[_currentIndex].Duration;
+					}
+					else {
+						direction = 1;
+						ResetSteps();
+						_currentIndex = 0;
+						_elapsed = 0f;
+					}
+					return true;
+			}
+
+			return Finish(forwardEnded);
+		}
+
+		public bool IsDead()
+		{
+			return Target == null;
 		}
 
 		// ---- Scrub ----
 		public virtual void Rewind(bool play = false)
 		{
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return;
+			}
 
 			ResetSteps();
 			_currentIndex = 0;
@@ -371,10 +514,12 @@ namespace RD_Tween.Runtime
 			PrepareStepStart(0);
 			ApplyStepAt(0, 0f);
 
-			if (!play)
+			if (!play) {
 				Pause();
-			else
+			}
+			else {
 				Resume();
+			}
 		}
 
 		public virtual void Goto(float time, bool play = false)
@@ -409,19 +554,25 @@ namespace RD_Tween.Runtime
 				}
 			}
 
-			if (!play)
+			if (!play) {
 				Pause();
-			else
+			}
+			else {
 				Resume();
+			}
 		}
 
-		public void GotoNormalized(float t01, bool play = false) => Goto(Duration * Mathf.Clamp01(t01), play);
+		public void GotoNormalized(float t01, bool play = false)
+		{
+			Goto(Duration * Mathf.Clamp01(t01), play);
+		}
 
 		public virtual void Complete(bool withCallbacks = true)
 		{
-			Goto(Duration, false);
-			if (withCallbacks)
+			Goto(Duration);
+			if (withCallbacks) {
 				_onComplete?.Invoke();
+			}
 
 			if (AutoKill) {
 				killed = true;
@@ -436,135 +587,30 @@ namespace RD_Tween.Runtime
 		// ---- Update ----
 		public virtual bool UpdateTween(float deltaTime)
 		{
-			if (killed)
+			if (killed) {
 				return Finish(false);
+			}
 
-			if (paused)
+			if (paused) {
 				return true;
+			}
 
-			if (Steps.Count == 0)
+			if (Steps.Count == 0) {
 				return Finish(false);
+			}
 
 			float dt = deltaTime * Speed;
 
 			if (delayElapsed < Delay) {
 				delayElapsed += dt;
-				if (delayElapsed < Delay)
+				if (delayElapsed < Delay) {
 					return true;
+				}
 			}
 
 			return direction >= 0 ? UpdateForward(dt) : UpdateBackward(dt);
 		}
 
-		private bool UpdateForward(float dt)
-		{
-			if (_currentIndex >= Steps.Count)
-				return HandleLoopOrFinish(true);
-
-			PrepareStepStart(_currentIndex);
-
-			_elapsed += dt;
-			float d = Steps[_currentIndex].Duration;
-			float t01 = Mathf.Clamp01(_elapsed / d);
-
-			ApplyStepAt(_currentIndex, t01);
-
-			if (_elapsed < d)
-				return true;
-
-			_elapsed = 0f;
-			_currentIndex++;
-			return true;
-		}
-
-		private bool UpdateBackward(float dt)
-		{
-			if (_currentIndex < 0)
-				return HandleLoopOrFinish(false);
-
-			PrepareStepStart(_currentIndex);
-
-			_elapsed -= dt;
-			float d = Steps[_currentIndex].Duration;
-			float t01 = Mathf.Clamp01(_elapsed / d);
-
-			ApplyStepAt(_currentIndex, t01);
-
-			if (_elapsed > 0f)
-				return true;
-
-			_currentIndex--;
-			if (_currentIndex >= 0)
-				_elapsed = Steps[_currentIndex].Duration;
-
-			return true;
-		}
-
-		private bool HandleLoopOrFinish(bool forwardEnded)
-		{
-			if (Loops == 1 || (Loops != -1 && LoopsDone >= Loops - 1))
-				return Finish(forwardEnded);
-
-			LoopsDone++;
-
-			switch (CurrentLoopType) {
-				case LoopType.Restart:
-				case LoopType.Incremental:
-					ResetSteps();
-					_currentIndex = 0;
-					_elapsed = 0f;
-					direction = 1;
-					return true;
-
-				case LoopType.Yoyo:
-					if (direction == 1) {
-						direction = -1;
-						_currentIndex = Steps.Count - 1;
-						PrepareStepStart(_currentIndex);
-						_elapsed = Steps[_currentIndex].Duration;
-					}
-					else {
-						direction = 1;
-						ResetSteps();
-						_currentIndex = 0;
-						_elapsed = 0f;
-					}
-					return true;
-			}
-
-			return Finish(forwardEnded);
-		}
-
-		protected bool Finish(bool completedForward)
-		{
-			if (completedForward)
-				_onComplete?.Invoke();
-			
-			Release();
-			return false;
-		}
-
-		protected void ResetSteps()
-		{
-			foreach (Step step in Steps)
-				step.Started = false;
-		}
-
-		protected void PrepareStepStart(int index)
-		{
-			Step step = Steps[index];
-			if (step.Started)
-				return;
-
-			step.Started = true;
-			step.OnStart?.Invoke();
-		}
-
-		protected void ApplyStepAt(int index, float t01)
-		{
-			Step step = Steps[index];
-			float t = step.Ease(t01);
-			step.Apply?.Invoke(t);
-		}
+		public virtual void Release() { }
 	}
 }

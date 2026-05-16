@@ -4,55 +4,69 @@ namespace RD_Tween.Runtime
 {
 	public static class TransformTweens
 	{
-		public static PropertyTween<Vector3> MoveTo(this Transform transform, Vector3 target, float duration) =>
-			TweenFactory.To(
+		public static PropertyTween<Vector3> MoveTo(this Transform transform, Vector3 target, float duration)
+		{
+			return TweenFactory.To(
 				transform,
 				() => transform.position,
 				vector3 => transform.position = vector3,
 				target,
 				duration
 			);
+		}
 
-		public static PropertyTween<Vector3> LocalMoveTo(this Transform transform, Vector3 target, float duration) =>
-			TweenFactory.To(
+		public static PropertyTween<Vector3> LocalMoveTo(this Transform transform, Vector3 target, float duration)
+		{
+			return TweenFactory.To(
 				transform,
 				() => transform.localPosition,
 				vector3 => transform.localPosition = vector3,
 				target,
 				duration
 			);
+		}
 
-		public static PropertyTween<Vector3> ScaleTo(this Transform transform, Vector3 target, float duration) =>
-			TweenFactory.To(
+		public static PropertyTween<Vector3> ScaleTo(this Transform transform, Vector3 target, float duration)
+		{
+			return TweenFactory.To(
 				transform,
 				() => transform.localScale,
 				vector3 => transform.localScale = vector3,
 				target,
 				duration
 			);
+		}
 
-		public static PropertyTween<Vector3> RotateTo(this Transform transform, Vector3 euler, float duration) =>
-			TweenFactory.To(
+		public static PropertyTween<Vector3> RotateTo(this Transform transform, Vector3 euler, float duration)
+		{
+			return TweenFactory.To(
 				transform,
 				() => transform.eulerAngles,
 				vector3 => transform.eulerAngles = vector3,
 				euler,
 				duration
 			);
+		}
 
-		public static TweenActionCore RotateByX(this Transform transform, float angle, float duration) =>
-			transform.RotateBy(Vector3.right, angle, duration);
+		public static TweenActionCore RotateByX(this Transform transform, float angle, float duration)
+		{
+			return transform.RotateBy(Vector3.right, angle, duration);
+		}
 
-		public static TweenActionCore RotateByY(this Transform transform, float angle, float duration) =>
-			transform.RotateBy(Vector3.up, angle, duration);
+		public static TweenActionCore RotateByY(this Transform transform, float angle, float duration)
+		{
+			return transform.RotateBy(Vector3.up, angle, duration);
+		}
 
-		public static TweenActionCore RotateByZ(this Transform transform, float angle, float duration) =>
-			transform.RotateBy(Vector3.forward, angle, duration);
+		public static TweenActionCore RotateByZ(this Transform transform, float angle, float duration)
+		{
+			return transform.RotateBy(Vector3.forward, angle, duration);
+		}
 
 		public static TweenActionCore RotateBy(this Transform transform, Vector3 axis, float angle, float duration)
 		{
 			var tweenActionCore = new TweenActionCore();
-			tweenActionCore.ResetCore(transform, autoPlay: true);
+			tweenActionCore.ResetCore(transform, true);
 
 			Quaternion start = default;
 
@@ -74,7 +88,7 @@ namespace RD_Tween.Runtime
 		public static TweenActionCore JumpTo(this Transform transform, Vector3 target, float duration, float height)
 		{
 			var tweenActionCore = new TweenActionCore();
-			tweenActionCore.ResetCore(transform, autoPlay: true);
+			tweenActionCore.ResetCore(transform, true);
 
 			Vector3 start = default;
 
@@ -97,13 +111,16 @@ namespace RD_Tween.Runtime
 			return tweenActionCore;
 		}
 
-		public static PropertyTween<Vector3> ManualTween(this Transform transform) => TweenFactory.To(
-			transform,
-			() => transform.position,
-			vector3 => transform.position = vector3,
-			transform.position,
-			0.0001f,
-			autoPlay: false
-		);
+		public static PropertyTween<Vector3> ManualTween(this Transform transform)
+		{
+			return TweenFactory.To(
+				transform,
+				() => transform.position,
+				vector3 => transform.position = vector3,
+				transform.position,
+				0.0001f,
+				false
+			);
+		}
 	}
 }

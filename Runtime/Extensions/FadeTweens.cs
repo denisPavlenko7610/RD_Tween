@@ -17,7 +17,7 @@ namespace RD_Tween.Runtime
 				() => sr.color.a,
 				v =>
 				{
-					var c = sr.color;
+					Color c = sr.color;
 					c.a = v;
 					sr.color = c;
 				},
@@ -33,7 +33,7 @@ namespace RD_Tween.Runtime
 				() => g.color.a,
 				v =>
 				{
-					var c = g.color;
+					Color c = g.color;
 					c.a = v;
 					g.color = c;
 				},

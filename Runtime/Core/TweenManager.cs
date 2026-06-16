@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace RD_Tween.Runtime
@@ -25,7 +24,7 @@ namespace RD_Tween.Runtime
             if (_runner != null)
 				return;
 
-            var existing = Object.FindAnyObjectByType<TweenRunner>();
+            TweenRunner existing = Object.FindAnyObjectByType<TweenRunner>();
             if (existing != null)
             {
                 _runner = existing;
@@ -33,7 +32,7 @@ namespace RD_Tween.Runtime
                 return;
             }
 
-            var go = new GameObject("[RD_TweenRunner]");
+            GameObject go = new GameObject("[RD_TweenRunner]");
             Object.DontDestroyOnLoad(go);
             _runner = go.AddComponent<TweenRunner>();
             _runner.Init(this);
@@ -70,7 +69,7 @@ namespace RD_Tween.Runtime
         {
             for (int i = list.Count - 1; i >= 0; i--)
             {
-                var tween = list[i];
+                TweenActionCore tween = list[i];
 
                 if (tween == null || tween.IsDead())
                 {
@@ -112,7 +111,7 @@ namespace RD_Tween.Runtime
             Instance.KillAllInternal(complete);
         }
 
-        public static void Kill(Object target, bool complete = false)
+        public static void Kill(System.Object target, bool complete = false)
         {
             Instance.KillByTargetInternal(target, complete);
         }
@@ -122,7 +121,7 @@ namespace RD_Tween.Runtime
             Instance.KillByIdInternal(id, complete);
         }
 
-        public static bool IsTweening(Object target)
+        public static bool IsTweening(System.Object target)
         {
             return Instance.IsTweeningTargetInternal(target);
         }
@@ -130,6 +129,26 @@ namespace RD_Tween.Runtime
         public static bool IsTweeningId(object id)
         {
             return Instance.IsTweeningIdInternal(id);
+        }
+
+        public static void PauseAll()
+        {
+            Instance.PauseAllLists();
+        }
+
+        public static void ResumeAll()
+        {
+            Instance.ResumeAllLists();
+        }
+
+        public static int ActiveCount()
+        {
+            return Instance.CountAllActive();
+        }
+
+        public static void GotoAll(float normalizedTime, bool play = false)
+        {
+            Instance.GotoAllLists(normalizedTime, play);
         }
 
         private void KillAllInternal(bool complete)
@@ -142,7 +161,7 @@ namespace RD_Tween.Runtime
             KillInList(_fixedUnscaled, complete, null, null);
         }
 
-        private void KillByTargetInternal(Object target, bool complete)
+        private void KillByTargetInternal(System.Object target, bool complete)
         {
             if (target == null)
 				return;
@@ -168,7 +187,7 @@ namespace RD_Tween.Runtime
             KillInList(_fixedUnscaled, complete, null, id);
         }
 
-        private bool IsTweeningTargetInternal(Object target)
+        private bool IsTweeningTargetInternal(System.Object target)
         {
             return FindInAnyList(t => t.Target == target);
         }
@@ -189,15 +208,21 @@ namespace RD_Tween.Runtime
         }
 
         private static bool Exists(List<TweenActionCore> list, System.Predicate<TweenActionCore> pred)
-		{
-			return list.Any(tweenActionCore => tweenActionCore != null && pred(tweenActionCore));
-		}
+  {
+   for (int i = 0; i < list.Count; i++)
+   {
+    TweenActionCore t = list[i];
+    if (t != null && pred(t))
+     return true;
+   }
+   return false;
+  }
 
-        private static void KillInList(List<TweenActionCore> list, bool complete, Object target, object id)
+        private static void KillInList(List<TweenActionCore> list, bool complete, System.Object target, object id)
         {
             for (int i = list.Count - 1; i >= 0; i--)
             {
-                var tweenActionCore = list[i];
+                TweenActionCore tweenActionCore = list[i];
                 if (tweenActionCore == null) { list.RemoveAt(i); continue; }
 
                 bool matchTarget = target == null || tweenActionCore.Target == target;
@@ -205,13 +230,93 @@ namespace RD_Tween.Runtime
 
                 if (matchTarget && matchId)
                 {
-                    if (complete) 
-						tweenActionCore.Complete(true);
-                    else 
-						tweenActionCore.Kill();
-					
+                    if (complete)
+      tweenActionCore.Complete(true);
+                    else
+      tweenActionCore.Kill();
+     
                     list.RemoveAt(i);
                 }
+            }
+        }
+
+        private void PauseAllLists()
+        {
+            PauseInList(_updateScaled);
+            PauseInList(_updateUnscaled);
+            PauseInList(_lateScaled);
+            PauseInList(_lateUnscaled);
+            PauseInList(_fixedScaled);
+            PauseInList(_fixedUnscaled);
+        }
+
+        private void ResumeAllLists()
+        {
+            ResumeInList(_updateScaled);
+            ResumeInList(_updateUnscaled);
+            ResumeInList(_lateScaled);
+            ResumeInList(_lateUnscaled);
+            ResumeInList(_fixedScaled);
+            ResumeInList(_fixedUnscaled);
+        }
+
+        private int CountAllActive()
+        {
+            int count = 0;
+            count += CountInList(_updateScaled);
+            count += CountInList(_updateUnscaled);
+            count += CountInList(_lateScaled);
+            count += CountInList(_lateUnscaled);
+            count += CountInList(_fixedScaled);
+            count += CountInList(_fixedUnscaled);
+            return count;
+        }
+
+        private void GotoAllLists(float normalizedTime, bool play)
+        {
+            GotoInList(_updateScaled, normalizedTime, play);
+            GotoInList(_updateUnscaled, normalizedTime, play);
+            GotoInList(_lateScaled, normalizedTime, play);
+            GotoInList(_lateUnscaled, normalizedTime, play);
+            GotoInList(_fixedScaled, normalizedTime, play);
+            GotoInList(_fixedUnscaled, normalizedTime, play);
+        }
+
+        private static void PauseInList(List<TweenActionCore> list)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] != null)
+                    list[i].Pause();
+            }
+        }
+
+        private static void ResumeInList(List<TweenActionCore> list)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] != null)
+                    list[i].Resume();
+            }
+        }
+
+        private static int CountInList(List<TweenActionCore> list)
+        {
+            int count = 0;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] != null)
+                    count++;
+            }
+            return count;
+        }
+
+        private static void GotoInList(List<TweenActionCore> list, float normalizedTime, bool play)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] != null)
+                    list[i].GotoNormalized(normalizedTime, play);
             }
         }
     }

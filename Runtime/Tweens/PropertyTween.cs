@@ -75,7 +75,7 @@ namespace RD_Tween.Runtime
 
 		private void OnStartStep()
 		{
-			var current = _getter();
+			T current = _getter();
 
 			if (!_relative && !_deltaInit && _sub != null) {
 				_delta = _sub(_baseEnd, current);
@@ -142,7 +142,7 @@ namespace RD_Tween.Runtime
 		}
 
 		public static PropertyTween<T> Rent(
-			UnityEngine.Object target,
+			Object target,
 			bool autoPlay,
 			Func<T> getter,
 			Action<T> setter,

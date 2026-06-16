@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace RD_Tween.Runtime
 {
 	public class TweenActionCore : IControllableTween, IPooledTween
 	{
-
 		internal readonly struct FromInstruction
 		{
 			public readonly FromMode Mode;
@@ -37,9 +35,11 @@ namespace RD_Tween.Runtime
 
 		private bool _isPlaying;
 
-		private Action _onComplete, _onPlay, _onPause, _onKill;
+		private Action _onComplete, _onPlay, _onPause, _onKill, _onRewind;
+		private Action _onUpdate;
+		private Action<int> _onStepComplete;
 
-		public UnityEngine.Object Target { get; private set; }
+		public System.Object Target { get; private set; }
 		public object Id { get; private set; }
 
 		public UpdateType UpdateType { get; private set; } = UpdateType.Normal;
@@ -56,14 +56,20 @@ namespace RD_Tween.Runtime
 		public bool AutoKill { get; private set; } = true;
 		public bool paused { get; private set; }
 		public bool killed { get; private set; }
-		protected int LoopsDone { get; set; }
+		protected internal int LoopsDone { get; set; }
 
 		public virtual float Duration
 		{
-			get { return Steps.Sum(t => t.Duration); }
+			get
+			{
+				float total = 0f;
+				for (int i = 0; i < Steps.Count; i++)
+					total += Steps[i].Duration;
+				return total;
+			}
 		}
 
-		public void ResetCore(UnityEngine.Object target, bool autoPlay)
+		public void ResetCore(System.Object target, bool autoPlay)
 		{
 			Target = target;
 			Id = null;
@@ -92,7 +98,9 @@ namespace RD_Tween.Runtime
 			paused = false;
 			killed = false;
 
-			_onComplete = _onPlay = _onPause = _onKill = null;
+			_onComplete = _onPlay = _onPause = _onKill = _onRewind = null;
+			_onUpdate = null;
+			_onStepComplete = null;
 		}
 
 		public TweenActionCore AddStep(
@@ -131,7 +139,7 @@ namespace RD_Tween.Runtime
 
 		public TweenActionCore SetUpdate(UpdateType type, bool isUnscaled = false)
 		{
-			var oldType = UpdateType;
+			UpdateType oldType = UpdateType;
 			bool oldUnscaled = IsUnscaled;
 
 			UpdateType = type;
@@ -280,6 +288,24 @@ namespace RD_Tween.Runtime
 			return this;
 		}
 
+		public TweenActionCore OnRewind(Action a)
+		{
+			_onRewind = a;
+			return this;
+		}
+
+		public TweenActionCore OnUpdate(Action a)
+		{
+			_onUpdate = a;
+			return this;
+		}
+
+		public TweenActionCore OnStepComplete(Action<int> a)
+		{
+			_onStepComplete = a;
+			return this;
+		}
+
 		// ---- Controls ----
 		public TweenActionCore Pause()
 		{
@@ -368,13 +394,13 @@ namespace RD_Tween.Runtime
 
 		protected void ResetSteps()
 		{
-			foreach (var step in Steps)
+			foreach (Step step in Steps)
 				step.Started = false;
 		}
 
 		protected void PrepareStepStart(int index)
 		{
-			var step = Steps[index];
+			Step step = Steps[index];
 			if (step.Started) {
 				return;
 			}
@@ -385,7 +411,7 @@ namespace RD_Tween.Runtime
 
 		protected void ApplyStepAt(int index, float t01)
 		{
-			var step = Steps[index];
+			Step step = Steps[index];
 			float t = step.Ease(t01);
 			step.Apply?.Invoke(t);
 		}
@@ -425,7 +451,9 @@ namespace RD_Tween.Runtime
 			}
 
 			_elapsed = 0f;
+			int completedIdx = _currentIndex;
 			_currentIndex++;
+			_onStepComplete?.Invoke(completedIdx);
 			return true;
 		}
 
@@ -513,6 +541,8 @@ namespace RD_Tween.Runtime
 
 			PrepareStepStart(0);
 			ApplyStepAt(0, 0f);
+
+			_onRewind?.Invoke();
 
 			if (!play) {
 				Pause();
@@ -608,7 +638,13 @@ namespace RD_Tween.Runtime
 				}
 			}
 
-			return direction >= 0 ? UpdateForward(dt) : UpdateBackward(dt);
+			bool result = direction >= 0 ? UpdateForward(dt) : UpdateBackward(dt);
+
+			if (result) {
+				_onUpdate?.Invoke();
+			}
+
+			return result;
 		}
 
 		public virtual void Release() { }

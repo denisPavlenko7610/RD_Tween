@@ -10,17 +10,25 @@ namespace RD_Tween.Runtime
 
 		private void Update()
 		{
-			_manager?.Update(UpdateType.Normal, Time.deltaTime, Time.unscaledDeltaTime);
+			if (_manager != null)
+				_manager.Update(UpdateType.Normal, Time.deltaTime, Time.unscaledDeltaTime);
 		}
 
 		private void LateUpdate()
 		{
-			_manager?.Update(UpdateType.Late, Time.deltaTime, Time.unscaledDeltaTime);
+			if (_manager != null)
+				_manager.Update(UpdateType.Late, Time.deltaTime, Time.unscaledDeltaTime);
 		}
 
 		private void FixedUpdate()
 		{
-			_manager?.Update(UpdateType.Fixed, Time.fixedDeltaTime, Time.fixedUnscaledDeltaTime);
+			if (_manager != null)
+				_manager.Update(UpdateType.Fixed, Time.fixedDeltaTime, Time.fixedUnscaledDeltaTime);
+		}
+
+		private void OnDestroy()
+		{
+			_manager = null;
 		}
 	}
 }

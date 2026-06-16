@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace RD_Tween.Runtime
@@ -85,7 +84,7 @@ namespace RD_Tween.Runtime
 			}
 
 			float shift = t.Duration;
-			foreach (var item in _items) {
+			foreach (Item item in _items) {
 				item.Start += shift;
 				item.End += shift;
 			}
@@ -163,7 +162,7 @@ namespace RD_Tween.Runtime
 		public TweenSequence PrependInterval(float duration)
 		{
 			duration = Mathf.Max(0f, duration);
-			foreach (var item in _items) {
+			foreach (Item item in _items) {
 				item.Start += duration;
 				item.End += duration;
 			}
@@ -296,7 +295,7 @@ namespace RD_Tween.Runtime
 
 		private void EvaluateScrub(float time)
 		{
-			foreach (var item in _items) {
+			foreach (Item item in _items) {
 				if (item.IsCallback) {
 					continue;
 				}
@@ -309,7 +308,7 @@ namespace RD_Tween.Runtime
 		private void EvaluateCross(float prev, float now, bool forward)
 		{
 			EvaluateScrub(now);
-			foreach (var item in _items) {
+			foreach (Item item in _items) {
 				if (!item.IsCallback) {
 					continue;
 				}
@@ -345,8 +344,12 @@ namespace RD_Tween.Runtime
 				return true;
 			}
 
-			foreach (var item in _items.Where(item => !item.IsCallback))
-				item.Tween.Rewind();
+for (int i = 0; i < _items.Count; i++)
+{
+Item item = _items[i];
+if (!item.IsCallback)
+item.Tween.Rewind();
+}
 
 			direction = 1;
 			_time = 0f;
@@ -363,7 +366,7 @@ namespace RD_Tween.Runtime
 
 		public static TweenSequence Rent(bool autoPlay = true)
 		{
-			var sequence = Pool.Count > 0 ? Pool.Pop() : new TweenSequence();
+			TweenSequence sequence = Pool.Count > 0 ? Pool.Pop() : new TweenSequence();
 			sequence._inPool = false;
 			sequence.ResetCore(null, autoPlay);
 			sequence._items.Clear();

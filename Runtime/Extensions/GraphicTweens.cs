@@ -48,5 +48,49 @@ namespace RD_Tween.Runtime
 				duration
 			);
 		}
+
+		// ---- Fade ----
+		public static PropertyTween<float> FadeTo(this Graphic graphic, float target, float duration)
+		{
+			return TweenFactory.To(
+				graphic,
+				() => graphic.color.a,
+				v =>
+				{
+					Color c = graphic.color;
+					c.a = v;
+					graphic.color = c;
+				},
+				target,
+				duration
+			);
+		}
+
+		public static PropertyTween<float> FadeTo(this CanvasGroup canvasGroup, float target, float duration)
+		{
+			return TweenFactory.To(
+				canvasGroup,
+				() => canvasGroup.alpha,
+				v => canvasGroup.alpha = v,
+				target,
+				duration
+			);
+		}
+
+		public static PropertyTween<float> FadeTo(this SpriteRenderer spriteRenderer, float target, float duration)
+		{
+			return TweenFactory.To(
+				spriteRenderer,
+				() => spriteRenderer.color.a,
+				v =>
+				{
+					Color c = spriteRenderer.color;
+					c.a = v;
+					spriteRenderer.color = c;
+				},
+				target,
+				duration
+			);
+		}
 	}
 }
